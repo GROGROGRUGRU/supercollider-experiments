@@ -1,0 +1,31 @@
+// Presque le même que la veille (sans les bus, j'aimais bien sans la réverbe finalement) et avec un HPF pour cleaner un peu le bas du spectre :)
+
+
+(
+SynthDef(\hecker, { |out, freq, t_trig, duration|
+	var output;
+	output = Saw.ar(freq: ([freq, freq+1] * SinOsc.ar(freq: MouseX.kr(0, 20) * SinOsc.ar(freq: MouseY.kr(0,50), add: 1))));
+	output = output.cubed.cubed.scaleneg(1).tanh;
+	output = EnvGen.ar(Env.perc(releaseTime: MouseY.kr(1, 10)), gate: t_trig, doneAction: Done.freeSelf) * output;
+	output = RHPF.ar(output, freq: MouseX.kr(300, 500));
+	Out.ar(0, channelsArray: output);
+}).add;
+)
+
+
+
+(
+{
+	1000.do {|i|
+		var low, hi, freq, duration;
+		low = 200;
+		hi = 2000;
+		freq = low+(i*(hi - low)/1000);
+		duration = [2, 4, 8, 10].choose;
+		freq.postln;
+		duration.postln;
+		Synth(\hecker, [out: 0, freq: freq, t_trig: 1, duration: duration]);
+		(duration/10).wait;
+	}
+}.fork;
+)
